@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { OrderStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrdersGateway } from './orders.gateway';
@@ -66,5 +66,49 @@ export class OrdersService {
     this.ordersGateway.broadcastOrderCreated(order);
 
     return order;
+  }
+
+  async listKitchenOrders(): Promise<OrderCreatedPayload[]> {
+    return this.prisma.order.findMany({
+      where: {
+        status: { in: [OrderStatus.PENDING, OrderStatus.PREPARING] },
+      },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrderCreatedPayload> {
+    const exists = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true },
+    });
+
+    if (!exists) {
+      throw new NotFoundException(`Order not found: ${orderId}`);
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    this.ordersGateway.broadcastOrderUpdated(updatedOrder);
+    return updatedOrder;
   }
 }

@@ -14,4 +14,8 @@ export class OrdersGateway {
   broadcastOrderCreated(order: OrderCreatedPayload): void {
     this.server.emit('orderCreated', order);
   }
+
+  broadcastOrderUpdated(order: OrderCreatedPayload): void {
+    this.server.emit('orderUpdated', order);
+  }
 }
