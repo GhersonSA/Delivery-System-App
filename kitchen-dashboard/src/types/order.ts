@@ -1,4 +1,4 @@
-export type KitchenStatus = 'PREPARING';
+export type KitchenStatus = 'PENDING' | 'PREPARING' | 'READY' | 'DELIVERED';
 
 export interface KitchenOrderItem {
   id: string;
@@ -17,5 +17,6 @@ export interface KitchenOrder {
   total: string;
   status: KitchenStatus;
   createdAt: string;
+  updatedAt?: string;
   items: KitchenOrderItem[];
 }

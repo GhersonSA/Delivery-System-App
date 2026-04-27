@@ -7,7 +7,7 @@ function shortCode(orderId: string): string {
 }
 
 export default function KitchenPage() {
-  const { isConnected, preparingOrders } = useKitchenOrders();
+  const { isConnected, isLoading, preparingOrders, readyOrders } = useKitchenOrders();
 
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col p-6 md:p-10">
@@ -25,45 +25,95 @@ export default function KitchenPage() {
         </div>
       </header>
 
-      <section className="rounded-3xl border border-orange-500/40 bg-slate-900/80 p-5 shadow-2xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-extrabold uppercase tracking-wide text-accent">En Preparacion</h2>
-          <span className="rounded-md bg-orange-500/20 px-3 py-1 text-sm font-semibold text-orange-300">
-            {preparingOrders.length} pedidos
-          </span>
-        </div>
+      {isLoading ? (
+        <section className="rounded-3xl border border-slate-700 bg-slate-900/80 p-8 text-center text-slate-300 shadow-2xl">
+          Cargando pedidos iniciales...
+        </section>
+      ) : (
+        <section className="grid gap-6 xl:grid-cols-2">
+          <div className="rounded-3xl border border-orange-500/40 bg-slate-900/80 p-5 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-extrabold uppercase tracking-wide text-accent">En Preparacion</h2>
+              <span className="rounded-md bg-orange-500/20 px-3 py-1 text-sm font-semibold text-orange-300">
+                {preparingOrders.length} pedidos
+              </span>
+            </div>
 
-        {preparingOrders.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-slate-400">
-            Esperando nuevos pedidos por WebSocket...
-          </p>
-        ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {preparingOrders.map((order) => (
-              <li key={order.id} className="rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
-                <div className="mb-4 flex items-start justify-between">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Codigo pedido</p>
-                    <p className="text-3xl font-black text-orange-300">#{shortCode(order.id)}</p>
-                  </div>
-                  <span className="rounded-md bg-orange-500/15 px-2 py-1 text-xs font-bold text-orange-200">
-                    PREPARING
-                  </span>
-                </div>
+            {preparingOrders.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-slate-400">
+                Sin pedidos en preparacion.
+              </p>
+            ) : (
+              <ul className="grid gap-4 sm:grid-cols-2">
+                {preparingOrders.map((order) => (
+                  <li key={order.id} className="rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Codigo pedido</p>
+                        <p className="text-3xl font-black text-orange-300">#{shortCode(order.id)}</p>
+                      </div>
+                      <span className="rounded-md bg-orange-500/15 px-2 py-1 text-xs font-bold text-orange-200">
+                        {order.status}
+                      </span>
+                    </div>
 
-                <ul className="space-y-2 text-sm text-slate-200">
-                  {order.items.map((item) => (
-                    <li key={item.id} className="flex justify-between gap-3 border-b border-slate-800 pb-1">
-                      <span className="truncate">{item.product.name}</span>
-                      <span className="font-bold">x{item.quantity}</span>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                    <ul className="space-y-2 text-sm text-slate-200">
+                      {order.items.map((item) => (
+                        <li key={item.id} className="flex justify-between gap-3 border-b border-slate-800 pb-1">
+                          <span className="truncate">{item.product.name}</span>
+                          <span className="font-bold">x{item.quantity}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="rounded-3xl border border-emerald-500/40 bg-slate-900/80 p-5 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xl font-extrabold uppercase tracking-wide text-emerald-300">
+                Listo Para Entregar
+              </h2>
+              <span className="rounded-md bg-emerald-500/20 px-3 py-1 text-sm font-semibold text-emerald-300">
+                {readyOrders.length} pedidos
+              </span>
+            </div>
+
+            {readyOrders.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-slate-700 p-8 text-center text-slate-400">
+                Sin pedidos listos.
+              </p>
+            ) : (
+              <ul className="grid gap-4 sm:grid-cols-2">
+                {readyOrders.map((order) => (
+                  <li key={order.id} className="rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Codigo pedido</p>
+                        <p className="text-3xl font-black text-emerald-300">#{shortCode(order.id)}</p>
+                      </div>
+                      <span className="rounded-md bg-emerald-500/15 px-2 py-1 text-xs font-bold text-emerald-200">
+                        READY
+                      </span>
+                    </div>
+
+                    <ul className="space-y-2 text-sm text-slate-200">
+                      {order.items.map((item) => (
+                        <li key={item.id} className="flex justify-between gap-3 border-b border-slate-800 pb-1">
+                          <span className="truncate">{item.product.name}</span>
+                          <span className="font-bold">x{item.quantity}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+      )}
     </main>
   );
 }
