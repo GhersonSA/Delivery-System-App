@@ -17,7 +17,11 @@ export const useSubmitOrder = () => {
       }
 
       const order = await submitOrder(payload);
-      await printTicket({ order, cartItems: items });
+      try {
+        await printTicket({ order, cartItems: items });
+      } catch (error) {
+        console.warn('Ticket printing failed. Order was created successfully.', error);
+      }
       return order;
     },
     onSuccess: () => {

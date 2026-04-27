@@ -1,11 +1,40 @@
-import {
-  BluetoothEscposPrinter,
-  BluetoothManager,
-  type BluetoothDevice,
-} from 'react-native-bluetooth-escpos-printer';
 import { EscPosTransport, Tp510ubTargetConfig } from './types';
 
 const DEFAULT_NAME_HINT = 'TP510UB';
+declare const require: (moduleName: string) => unknown;
+
+interface BluetoothDevice {
+  name?: string;
+  address?: string;
+}
+
+interface BluetoothModuleBridge {
+  BluetoothManager: {
+    enableBluetooth: () => Promise<unknown>;
+    connect: (address: string) => Promise<unknown>;
+  };
+  BluetoothEscposPrinter: {
+    printRawData?: (data: string) => Promise<unknown>;
+    printerRawData?: (data: string) => Promise<unknown>;
+  };
+}
+
+function loadBluetoothBridge(): BluetoothModuleBridge {
+  try {
+    const mod = require('react-native-bluetooth-escpos-printer') as Partial<BluetoothModuleBridge>;
+    if (!mod.BluetoothManager || !mod.BluetoothEscposPrinter) {
+      throw new Error('Bluetooth bridge is missing required exports.');
+    }
+    return {
+      BluetoothManager: mod.BluetoothManager,
+      BluetoothEscposPrinter: mod.BluetoothEscposPrinter,
+    };
+  } catch {
+    throw new Error(
+      'Bluetooth ESC/POS module is not available in Expo Go. Use a Development Build (expo run:android / EAS build) to print.',
+    );
+  }
+}
 
 function bytesToBase64(bytes: Uint8Array): string {
   const alphabet =
@@ -79,6 +108,8 @@ export class Tp510ubBluetoothTransport implements EscPosTransport {
       return;
     }
 
+    const { BluetoothManager } = loadBluetoothBridge();
+
     const available = await BluetoothManager.enableBluetooth();
     const devices = parseBluetoothDevices(available);
     const target = resolveTargetDevice(devices, this.config);
@@ -94,6 +125,8 @@ export class Tp510ubBluetoothTransport implements EscPosTransport {
   }
 
   async write(data: Uint8Array): Promise<void> {
+    const { BluetoothEscposPrinter } = loadBluetoothBridge();
+
     await this.ensureConnected();
 
     const rawFn =

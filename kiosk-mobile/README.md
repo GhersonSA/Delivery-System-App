@@ -1,6 +1,6 @@
 # Kiosk Mobile
 
-This folder contains the React Native kiosk logic for Delivery System App.
+This folder now includes a runnable Expo app for kiosk ordering.
 
 ## Included
 
@@ -9,8 +9,29 @@ This folder contains the React Native kiosk logic for Delivery System App.
   - `removeItem`
   - `clearCart`
 - Order submit flow to backend (`POST /api/orders`)
-- Ticket print triggered after successful order creation
+- Ticket print attempted after successful order creation
 - TanStack Query mutation hook (`useSubmitOrder`)
+- Product list fetch from backend (`GET /api/products`)
+- App UI to add products to cart and send orders
+
+## Run App
+
+```bash
+npm install
+npm run start
+```
+
+Then open Android/iOS simulator from Expo, or scan the QR in Expo Go.
+
+## Backend URL
+
+Default mobile URL is Android emulator friendly:
+
+- `http://10.0.2.2:3001`
+
+Override with env var when using real device:
+
+- `EXPO_PUBLIC_API_URL=http://YOUR_LOCAL_IP:3001`
 
 ## Phase 5 ESC/POS (TP510UB 80mm)
 
